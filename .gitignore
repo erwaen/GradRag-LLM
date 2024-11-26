@@ -1,0 +1,6 @@
+.env
+.venv
+env/
+data/advisors/*
+data/advisors/
+./data/advisors/
