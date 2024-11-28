@@ -1,64 +1,104 @@
 from llama_index.core import Document
-from llama_index.core.node_parser import SentenceSplitter
 from typing import List
 from pathlib import Path
 import json
 import logging
+import glob
+import re
+from crawler.data_model import University, Advisor, DataModel, Papers
+from qdrant_client import QdrantClient
+from llama_index.vector_stores.qdrant import QdrantVectorStore
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.embeddings.openai import  OpenAIEmbedding
 
-def load_advisor_data(data_dir: str = "data/advisors") -> List[Document]:
-    """Load advisor data and create documents with metadata"""
-    documents = []
-    advisor_dir = Path(data_dir)
-    
-    for file in advisor_dir.glob("*.json"):
-        try:
-            with open(file, 'r') as f:
-                data = json.load(f)
-                
-            # Extract text content
-            raw_content = data.get('raw_content', {})
-            text = raw_content.get('raw_text', '')
-            
-            # Create metadata
-            metadata = {
-                'advisor_name': data.get('name', ''),
-                'university': data.get('university', ''),
-                'papers': data.get('papers', {}),
-                'url': raw_content.get('url', ''),
-                'page_title': raw_content.get('page_title', ''),
-                'source_type': 'advisor_profile'
-            }
-            
-            # Create document with metadata
-            doc = Document(text=text, metadata=metadata)
-            documents.append(doc)
-            
-        except Exception as e:
-            logging.error(f"Error processing {file}: {e}")
-    
-    return documents
+from llama_index.core import GPTVectorStoreIndex, VectorStoreIndex, StorageContext
+from llama_index.core import Settings
 
-def create_contextual_chunks(documents: List[Document]) -> List[Document]:
-    """Create contextual chunks from documents"""
-    parser = SentenceSplitter(
-        chunk_size=512,
-        chunk_overlap=50,
-        separator=" ",
-        paragraph_separator="\n\n",
-        secondary_chunking_regex="[^.!?]+[.!?]"
+from config import get_settings
+
+logger = logging.getLogger(__name__)
+
+def get_advisor_documents() -> List[Document]:
+    raw_data_path = "data/raw"
+    files = glob.glob(f"{raw_data_path}/csrankings_*.json")
+    latest_file = max(files, key=lambda x: re.search(r'(\d{8}_\d{6})', x).group(1))
+
+    with open(latest_file, 'r') as f:
+        data = json.load(f)
+
+    data = DataModel.model_validate(data)    
+    universities = data.universities
+
+    advisor_documents = []
+    for university in universities:
+        for advisor in university.advisors:
+            advisor_size = len(str(advisor).encode('utf-8'))
+            # skip advisor with more than 5mb, there is a problem when chunking  
+            if advisor_size > 5_000_000:
+                print("skipping advisor", advisor.name)
+                continue
+
+            if "raw_text" in advisor.raw_content and advisor.raw_content["raw_text"] != "":
+                # Filter papers with count > 0
+                active_areas = {
+                    papers["name"]: papers["count"]
+                    for area, papers in advisor.papers.model_dump().items() 
+                    if papers["count"] > 0
+                } 
+                total_papers = sum(count for count in active_areas.values())
+                clean_text = re.sub(r'[^\w\s,.!?]', '', advisor.raw_content["raw_text"])
+ 
+                # Create document with enhanced metadata
+                doc = Document(
+                    text=clean_text,
+                    metadata={
+                        "name": advisor.name,
+                        "university": university.name,
+                        "research_areas": active_areas,
+                        # "research_areas": advisor.papers.model_dump(),
+                        "total_papers": total_papers,
+                        "homepage": advisor.href
+                    }
+                )
+                advisor_documents.append(doc)
+    
+    return advisor_documents
+    
+def store_advisor_documents(documents: List[Document]):
+    settings = get_settings()
+    # Initialize Qdrant client
+    client = QdrantClient(
+        url=settings.QDRANT_URL,
+        api_key=settings.QDRANT_API_KEY,
     )
     
-    chunked_documents = []
-    for doc in documents:
-        chunks = parser.split_text(doc.text)
-        for i, chunk in enumerate(chunks):
-            # Create new metadata with chunk info
-            chunk_metadata = {
-                **doc.metadata,
-                'chunk_id': i,
-                'total_chunks': len(chunks)
-            }
-            chunked_doc = Document(text=chunk, metadata=chunk_metadata)
-            chunked_documents.append(chunked_doc)
+    # service_context = ServiceContext.from_defaults(chunk_size_limit=512)
+    # Settings.embed_model = HuggingFaceEmbedding(
+    #     model_name="BAAI/bge-small-en-v1.5"
+    # )
+    Settings.embed_model = OpenAIEmbedding(
+        api_key=settings.OPENAI_API_KEY,
+        model="text-embedding-3-small"
+    )
     
-    return chunked_documents
+    Settings.chunk_size= 512 
+    # Create vector store
+    vector_store = QdrantVectorStore(client=client, collection_name="advisors2")
+    
+
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+    index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
+    # index = VectorStoreIndex.from_documents(documents,  show_progress=True)
+   
+    print("here2")
+    
+    logger.info(f"Stored {len(documents)} advisor documents in Qdrant")
+    return index
+
+    
+    
+
+
+
+

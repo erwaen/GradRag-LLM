@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from llm import llm,  genereate_list_of_advisors
 from endpoints import router as advisors_router
 from crawler.crawler import router as crawler_router
+from vectorstore.router import router as vectorstore_router
 app = FastAPI() 
 
 settings = get_settings()
@@ -22,3 +23,4 @@ def get_advisors(q:str):
 
 app.include_router(advisors_router, prefix="/api", tags=["advisors"])
 app.include_router(crawler_router, prefix="/api", tags=["crawler"])
+app.include_router(vectorstore_router, prefix="/api", tags=["vectorstore"])
