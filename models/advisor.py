@@ -12,13 +12,12 @@ class AdvisorApplication(BaseModel):
 class AdvisorMatch(BaseModel):
     name: str
     university: str
-    department: str
+    # department: str
     research_areas: List[str]
-    h_index: int
-    recent_publications: List[str]
-    current_projects: List[str]
+    # recent_publications: List[str]
+    # current_projects: List[str]
     email: str
-    lab_website: str
+    website: str
     match_score: float  # Relevance to student's interests
-    application_details: AdvisorApplication
+    # application_details: AdvisorApplication
     why_good_fit: str  # Personalized explanation

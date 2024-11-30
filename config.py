@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     SPIDER_API_KEY: str
     QDRANT_URL: str
     QDRANT_API_KEY: str
+    COHERE_API_KEY: str
 
     model_config = SettingsConfigDict(env_file=".env")
     STORAGE_DIR: str = "data"

@@ -91,7 +91,6 @@ def store_advisor_documents(documents: List[Document]):
     index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
     # index = VectorStoreIndex.from_documents(documents,  show_progress=True)
    
-    print("here2")
     
     logger.info(f"Stored {len(documents)} advisor documents in Qdrant")
     return index
