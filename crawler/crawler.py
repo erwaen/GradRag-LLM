@@ -7,6 +7,7 @@ from selenium.webdriver.chrome.options import Options
 from fastapi import APIRouter
 from .data_model import DataModel, University, Rankings, Advisor, Papers
 from config import get_settings
+import re 
 router = APIRouter()
 CSV_URL = "https://csrankings.org/csrankings.csv"
 
@@ -31,10 +32,10 @@ cs_categories = {
     # "soft": "Software engineering",
     # "act": "Algorithms & complexity",
     # "crypt": "Cryptography",
-    "log": "Logic & verification",
-    "graph": "Computer graphics",
-    "bio": "Comp. bio & bioinformatics",
-    "csed": "Computer science education",
+    # "log": "Logic & verification",
+    # "graph": "Computer graphics",
+    # "bio": "Comp. bio & bioinformatics",
+    # "csed": "Computer science education",
     "ecom": "Economics & computation",
     "chi": "Human-computer interaction",
     "robotics": "Robotics",
@@ -129,8 +130,12 @@ class AdvisorCrawler:
 
     def _parse_content(self, soup: BeautifulSoup, url: str) -> Dict:
         """Parse BeautifulSoup content into structured dictionary"""
+        raw_context = soup.get_text(separator=' ', strip=True)
+        raw_context_without_spaces = re.sub(r'\s+', ' ', raw_context)
+        raw_context_without_lines_extra = re.sub(r'\n+', '\n', raw_context_without_spaces)
+        raw_text = raw_context_without_lines_extra.strip()
         return {
-            'raw_text': soup.get_text(separator=' ', strip=True),
+            'raw_text': raw_text,
             'links': [a.get('href') for a in soup.find_all('a', href=True)],
             'page_title': soup.title.string if soup.title else '',
             'url': url,

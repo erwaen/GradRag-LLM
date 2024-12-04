@@ -12,7 +12,9 @@ class Settings(BaseSettings):
     QDRANT_URL: str
     QDRANT_API_KEY: str
     COHERE_API_KEY: str
-
+    BING_API_KEY: str
+    BING_API_ENDPOINT: str
+    TAVILY_API_KEY: str
     model_config = SettingsConfigDict(env_file=".env")
     STORAGE_DIR: str = "data"
 

@@ -1,6 +1,9 @@
 from llama_index.core import VectorStoreIndex
+from typing import List
+from llama_index.core.schema import NodeRelationship
+from llama_index.core.schema import NodeWithScore
 from llama_index.llms.openai import OpenAI
-
+from llama_index.core.schema import MetadataMode
 from llama_index.core import StorageContext
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -9,13 +12,16 @@ from llama_index.postprocessor.cohere_rerank import CohereRerank
 from config import get_settings
 from qdrant_client import QdrantClient
 from llama_index.core.program import LLMTextCompletionProgram
+from tavily import TavilyClient
+
 
 from models.carts import Carts
 
 from llama_index.core import Settings
 import os
 
-def retrieve_advisors(question: str):
+
+def retrieve_advisors(original_question: str, question: str):
     settings = get_settings()
     # Initialize Qdrant client
     client = QdrantClient(
@@ -23,13 +29,12 @@ def retrieve_advisors(question: str):
         api_key=settings.QDRANT_API_KEY,
     )
 
-
     Settings.embed_model = OpenAIEmbedding(
         model="text-embedding-3-small",
         api_key=settings.OPENAI_API_KEY,
     )
     Settings.llm = OpenAI(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         api_key=settings.OPENAI_API_KEY,
     )
     vector_store = QdrantVectorStore(client=client, collection_name="advisors2")
@@ -47,22 +52,25 @@ def retrieve_advisors(question: str):
         node_postprocessor=[cohere_rerank],
     )
 
-    # # Retrieve relevant documents
-    # results = query_engine.query(question)
-
     # Get initial results
     raw_results = retriever.retrieve(
-        f"""Find potential PhD advisors based on the following interest: {question}. 
+        f"""Find potential PhD advisors based on the following interests with the following questions:
+        {question}. 
         Consider their research areas, publication history, and university affiliation."""
     )
 
+    context_builded = build_context(raw_results[:5])
+    # internet_search_results = search_university_info_internet(raw_results[:5])
+    # mixed_context = mixed_context_with_internet(context_builded, internet_search_results)
+    # print(mixed_context)
     # Format results into Carts structure
     advisor_prompt = """\
     Given the following retrieved information:
     {context}
 
     Based on the retrieved professors and their research work, generate a list of recommended advisors 
-    for a PhD student with the following question: {question}
+    for a PhD student with the following questions:
+    {questions}
 
     Consider:
     1. Research area alignment with student interests
@@ -70,26 +78,54 @@ def retrieve_advisors(question: str):
     3. University reputation
     4. Current research activities
 
-    Format the response as a structured list of advisors with their key strengths and fit.
+    Format the response as a structured list of advisors with their key strengths and fit. Generate 5 results.
     """
 
     program = LLMTextCompletionProgram.from_defaults(
         llm=Settings.llm,
         output_cls=Carts,
         prompt_template_str=advisor_prompt,
+        verbose=True,
     )
+
     final_results = program(
-        question=question,
-        context=raw_results
+        question=original_question,
+        context=context_builded,
+        verbose=True,
     )
-    
+   
     return final_results
 
 
-def build_context(raw_results):
-    context = ""
-    for result in raw_results:
-        context += f"Name: {result.node.text}\n"
-        context += f"Research: {result.node.metadata['research']}\n"
-        context += f"University: {result.node.metadata['university']}\n\n"
+def build_context(raw_results: List[NodeWithScore]) -> str:
+    context = []
+    for i, result in enumerate(raw_results):
+        # Get main advisor content
+        context_str = ""
+        content = result.get_content(MetadataMode.ALL)
+        context_str += f"Advisor {i+1} (Match Score: {result.score})\n{content}\n"
+        context.append(context_str)
+        
+
     return context
+
+
+def search_university_info_internet(raw_results: List[NodeWithScore]) -> str:
+    settings = get_settings()
+    tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
+ 
+     
+    search_results_str = ""
+    for result in raw_results:
+        university_name = result.metadata["university"]
+        web_result= tavily_client.search(query=f"What is the Deadline, GPA, and GRE requirement, to apply to a PhD in computer science at {university_name}")
+        search_results_str += f"Deadline, GPA, and GRE requirement for {university_name}: {web_result}\n"
+    
+    return search_results_str
+
+def mixed_context_with_internet(context: str, internet_search_results: str) -> str:
+    mixed_context = []
+    for i, context_str in enumerate(context):
+        context_str += f"Internet search results for advisor {i+1} about gre, gpa, and deadline: {internet_search_results}\n"
+        mixed_context.append(context_str)
+    return mixed_context

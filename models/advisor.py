@@ -10,14 +10,15 @@ class AdvisorApplication(BaseModel):
     minimum_gpa: Optional[float]
 
 class AdvisorMatch(BaseModel):
+    """
+    Data model for an advisor match.
+
+    The explanation of why this advisor is a good fit should be one paragraph long, based on the user's question, to clearly articulate the reasons.
+    """
     name: str
     university: str
-    # department: str
     research_areas: List[str]
-    # recent_publications: List[str]
-    # current_projects: List[str]
     email: str
     website: str
-    match_score: float  # Relevance to student's interests
-    # application_details: AdvisorApplication
+    match_score: float  
     why_good_fit: str  # Personalized explanation
