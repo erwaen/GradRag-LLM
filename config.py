@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     BING_API_KEY: str
     BING_API_ENDPOINT: str
     TAVILY_API_KEY: str
-    model_config = SettingsConfigDict(env_file=".env")
     STORAGE_DIR: str = "data"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8",)
 
 def get_settings():
     return Settings()

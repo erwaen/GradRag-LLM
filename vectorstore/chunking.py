@@ -8,7 +8,6 @@ import re
 from crawler.data_model import University, Advisor, DataModel, Papers
 from qdrant_client import QdrantClient
 from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.embeddings.openai import  OpenAIEmbedding
 
 from llama_index.core import GPTVectorStoreIndex, VectorStoreIndex, StorageContext

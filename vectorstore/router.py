@@ -7,11 +7,11 @@ from .multiquery import generate_queries
 router = APIRouter()
 
 
-@router.get("/doc_advisor")
-def doc_advisor():
-    documents = get_advisor_documents()
-    index = store_advisor_documents(documents)
-    return {"message": "Documents stored"} 
+# @router.get("/doc_advisor")
+# def doc_advisor():
+#     documents = get_advisor_documents()
+#     index = store_advisor_documents(documents)
+#     return {"message": "Documents stored"} 
 
 class Body(BaseModel):
     q: str

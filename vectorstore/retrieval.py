@@ -34,7 +34,7 @@ def retrieve_advisors(original_question: str, question: str):
         api_key=settings.OPENAI_API_KEY,
     )
     Settings.llm = OpenAI(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         api_key=settings.OPENAI_API_KEY,
     )
     vector_store = QdrantVectorStore(client=client, collection_name="advisors2")
@@ -59,7 +59,7 @@ def retrieve_advisors(original_question: str, question: str):
         Consider their research areas, publication history, and university affiliation."""
     )
 
-    context_builded = build_context(raw_results[:5])
+    context_builded = build_context(raw_results)
     # internet_search_results = search_university_info_internet(raw_results[:5])
     # mixed_context = mixed_context_with_internet(context_builded, internet_search_results)
     # print(mixed_context)
@@ -78,7 +78,7 @@ def retrieve_advisors(original_question: str, question: str):
     3. University reputation
     4. Current research activities
 
-    Format the response as a structured list of advisors with their key strengths and fit. Generate 5 results.
+    Format the response as a structured list of advisors with their key strengths and fit. Generate at least 3 to 6 results.
     """
 
     program = LLMTextCompletionProgram.from_defaults(

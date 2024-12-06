@@ -14,10 +14,10 @@ Queries:
 query_gen_prompt = PromptTemplate(query_gen_str)
 
 
-llm = OpenAI(model="gpt-4o-mini", api_key=settings.OPENAI_API_KEY)
 
 
 def generate_queries(query: str, num_queries: int = 4):
+    llm = OpenAI(model="gpt-4o-mini", api_key=settings.OPENAI_API_KEY)
     response = llm.predict(
         query_gen_prompt, num_queries=num_queries, query=query
     )
