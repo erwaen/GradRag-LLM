@@ -18,5 +18,5 @@ app.add_middleware(
 )
 
 
-# app.include_router(crawler_router, prefix="/api", tags=["crawler"])
+app.include_router(crawler_router, prefix="/api", tags=["crawler"])
 app.include_router(vectorstore_router, prefix="/api", tags=["vectorstore"])

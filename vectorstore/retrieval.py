@@ -12,7 +12,6 @@ from llama_index.postprocessor.cohere_rerank import CohereRerank
 from config import get_settings
 from qdrant_client import QdrantClient
 from llama_index.core.program import LLMTextCompletionProgram
-from tavily import TavilyClient
 
 
 from models.carts import Carts
@@ -38,6 +37,7 @@ def retrieve_advisors(original_question: str, question: str):
         api_key=settings.OPENAI_API_KEY,
     )
     vector_store = QdrantVectorStore(client=client, collection_name="advisors2")
+
 
     index = VectorStoreIndex.from_vector_store(vector_store, embed_model=Settings.embed_model)
     # setup reranking with cohere
@@ -110,22 +110,22 @@ def build_context(raw_results: List[NodeWithScore]) -> str:
     return context
 
 
-def search_university_info_internet(raw_results: List[NodeWithScore]) -> str:
-    settings = get_settings()
-    tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
+# def search_university_info_internet(raw_results: List[NodeWithScore]) -> str:
+#     settings = get_settings()
+#     tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
  
      
-    search_results_str = ""
-    for result in raw_results:
-        university_name = result.metadata["university"]
-        web_result= tavily_client.search(query=f"What is the Deadline, GPA, and GRE requirement, to apply to a PhD in computer science at {university_name}")
-        search_results_str += f"Deadline, GPA, and GRE requirement for {university_name}: {web_result}\n"
+#     search_results_str = ""
+#     for result in raw_results:
+#         university_name = result.metadata["university"]
+#         web_result= tavily_client.search(query=f"What is the Deadline, GPA, and GRE requirement, to apply to a PhD in computer science at {university_name}")
+#         search_results_str += f"Deadline, GPA, and GRE requirement for {university_name}: {web_result}\n"
     
-    return search_results_str
+#     return search_results_str
 
-def mixed_context_with_internet(context: str, internet_search_results: str) -> str:
-    mixed_context = []
-    for i, context_str in enumerate(context):
-        context_str += f"Internet search results for advisor {i+1} about gre, gpa, and deadline: {internet_search_results}\n"
-        mixed_context.append(context_str)
-    return mixed_context
+# def mixed_context_with_internet(context: str, internet_search_results: str) -> str:
+#     mixed_context = []
+#     for i, context_str in enumerate(context):
+#         context_str += f"Internet search results for advisor {i+1} about gre, gpa, and deadline: {internet_search_results}\n"
+#         mixed_context.append(context_str)
+#     return mixed_context
