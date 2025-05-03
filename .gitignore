@@ -4,3 +4,5 @@ env/
 data/advisors/*
 data/advisors/
 ./data/advisors/
+idea/
+.idea/*
