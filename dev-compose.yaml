@@ -1,0 +1,28 @@
+services:
+  backend:
+    build: 
+      dockerfile: ./docker/dev/Dockerfile
+      context: ./
+    container_name: backend_app
+    ports:
+      - "8000:8000"
+    working_dir: /app
+    volumes:
+      - ./:/app
+
+    env_file:
+      - .env2 
+    depends_on:
+      - qdrant
+
+
+
+    
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+  
+
