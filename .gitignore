@@ -7,3 +7,4 @@ data/advisors/
 __pycache__/
 idea/
 .idea/*
+data/
