@@ -18,7 +18,7 @@ class AdvisorMatch(BaseModel):
     name: str
     university: str
     research_areas: List[str]
-    email:  Optional[str] = None 
+    email:  Optional[str] = None
     website: str
     match_score: float  
     why_good_fit: str  # Personalized explanation
