@@ -30,9 +30,9 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str]) ->
 
     openai.api_key = settings.OPENAI_API_KEY
     client = QdrantClient(
-        url="http://localhost:6333"
-        #url=settings.QDRANT_URL,
-        #api_key=settings.QDRANT_API_KEY,
+        #url="http://localhost:6333"
+        url=settings.QDRANT_URL,
+        api_key=settings.QDRANT_API_KEY,
     )
     embedding_search_start = time.time()
     # Step 1 & 2: Embed and search each subquestion
