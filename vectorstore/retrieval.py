@@ -1,131 +1,156 @@
-from llama_index.core import VectorStoreIndex
-from typing import List
-from llama_index.core.schema import NodeRelationship
-from llama_index.core.schema import NodeWithScore
-from llama_index.llms.openai import OpenAI
-from llama_index.core.schema import MetadataMode
-from llama_index.core import StorageContext
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.postprocessor.cohere_rerank import CohereRerank
-
 from config import get_settings
 from qdrant_client import QdrantClient
-from llama_index.core.program import LLMTextCompletionProgram
+from models.carts import Cart
+import openai
+from openai import OpenAI
+from qdrant_client.models import Filter, SearchParams, PointStruct
+from qdrant_client.http.models import SearchRequest, ScoredPoint
+from typing import Generator
+import time
+import json
+import re
+from typing import List
 
 
-from models.carts import Carts
-
-from llama_index.core import Settings
-import os
-
-
-def retrieve_advisors(original_question: str, question: str):
+def get_embedding(question: str) -> List[float]:
     settings = get_settings()
-    # Initialize Qdrant client
+    client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+    response=client.embeddings.create(
+        input=question,
+        model="text-embedding-3-small"
+    )
+
+    return response.data[0].embedding
+
+
+def retrieve_advisors_stream(original_question: str, subquestions: List[str]) -> Generator[str, None, None]:
+    start_time = time.time()  # Start measuring time
+    settings = get_settings()
+
+    openai.api_key = settings.OPENAI_API_KEY
     client = QdrantClient(
+        #url="http://localhost:6333"
         url=settings.QDRANT_URL,
         api_key=settings.QDRANT_API_KEY,
     )
+    embedding_search_start = time.time()
+    # Step 1 & 2: Embed and search each subquestion
+    all_results: List[ScoredPoint] = []
+    seen_ids = set()
+    for subq in subquestions:
+        query_vector = get_embedding(subq)
+        search_results: List[ScoredPoint] = client.search(
+            collection_name="advisors2",
+            query_vector=query_vector,
+            limit=5,
+            search_params=SearchParams(hnsw_ef=512),
+        )
+        for res in search_results:
+            if res.id not in seen_ids:
+                res.payload["origin_query"] = subq
+                all_results.append(res)
+                seen_ids.add(res.id)
 
-    Settings.embed_model = OpenAIEmbedding(
-        model="text-embedding-3-small",
-        api_key=settings.OPENAI_API_KEY,
-    )
-    Settings.llm = OpenAI(
-        model="gpt-4o-mini",
-        api_key=settings.OPENAI_API_KEY,
-    )
-    vector_store = QdrantVectorStore(client=client, collection_name="advisors2")
-
-
-    index = VectorStoreIndex.from_vector_store(vector_store, embed_model=Settings.embed_model)
-    # setup reranking with cohere
-    cohere_rerank = CohereRerank(
-        api_key=settings.COHERE_API_KEY,
-        model="rerank-english-v3.0",
-        top_n=10,
-    )
-    # # Create a query engine, with reranking
-    retriever= index.as_retriever(
-        similarity_top_k=20,
-        node_postprocessor=[cohere_rerank],
-    )
-
-    # Get initial results
-    raw_results = retriever.retrieve(
-        f"""Find potential PhD advisors based on the following interests with the following questions:
-        {question}. 
-        Consider their research areas, publication history, and university affiliation."""
-    )
-
-    context_builded = build_context(raw_results)
-    # internet_search_results = search_university_info_internet(raw_results[:5])
-    # mixed_context = mixed_context_with_internet(context_builded, internet_search_results)
-    # print(mixed_context)
-    # Format results into Carts structure
-    advisor_prompt = """\
-    Given the following retrieved information:
-    {context}
-
-    Based on the retrieved professors and their research work, generate a list of recommended advisors 
-    for a PhD student with the following questions:
-    {questions}
-
-    Consider:
-    1. Research area alignment with student interests
-    2. Publication impact in relevant areas
-    3. University reputation
-    4. Current research activities
-
-    Format the response as a structured list of advisors with their key strengths and fit. Generate at least 3 to 6 results.
-    """
-
-    program = LLMTextCompletionProgram.from_defaults(
-        llm=Settings.llm,
-        output_cls=Carts,
-        prompt_template_str=advisor_prompt,
-        verbose=True,
-    )
-
-    final_results = program(
-        question=original_question,
-        context=context_builded,
-        verbose=True,
-    )
-   
-    return final_results
+    embedding_search_time = time.time() - embedding_search_start
+    print(f"Embedding and search time: {embedding_search_time:.2f} seconds")
 
 
-def build_context(raw_results: List[NodeWithScore]) -> str:
+    # 3. Sort and build context from top results
+    top_results = sorted(all_results, key=lambda r: r.score, reverse=True)[:10]
     context = []
-    for i, result in enumerate(raw_results):
-        # Get main advisor content
-        context_str = ""
-        content = result.get_content(MetadataMode.ALL)
-        context_str += f"Advisor {i+1} (Match Score: {result.score})\n{content}\n"
-        context.append(context_str)
-        
+    for i, result in enumerate(top_results):
+        payload = result.payload
+        payload["match_score"] = f"{round(result.score * 100, 2)}%"
+        context.append(f"Advisor {i+1} (from: '{payload.get('origin_query', '')}'):\n{json.dumps(payload, indent=2)}\n")
 
-    return context
+    context_str = "\n".join(context)
+
+    # 4. Use OpenAI to generate structured advisor recommendations
+    advisor_prompt = f"""
+Given the following retrieved information:
+{context_str}
+
+Based on the retrieved professors and their research work, generate a list of recommended advisors 
+for a PhD student with the following questions:
+{original_question}
+
+Consider:
+1. Research area alignment with student interests
+2. Publication impact in relevant areas
+3. University reputation
+4. Current research activities
+5. Match score (importance of match to student query)
+
+**Instructions**:
+- Output each advisor recommendation as an individual JSON object (do not wrap in a list).
+- Each JSON object must follow this structure:
+
+{{
+  "advisor": {{
+    "name": string,
+    "university": string,
+    "research_areas": [string, ...],
+    "email": string,
+    "website": string,
+    "match_score": float (0 to 1),
+    "why_good_fit": string
+  }},
+  "university": string,
+  "application_deadline": string or null,
+  "gpa_requirement": string or null,
+  "gre_requirement": string or null,
+  "funding_available": "Full", "Partial", "None", or null
+}}
+
+- Output 3 to 6 such objects.
+- Each object should be printed **on its own line** with no explanation.
+- End each object with a newline \\n.
+- Do not output any surrounding commentary, text, or list brackets.
+
+Now generate the recommendations:
+
+"""
+
+    #5 Updated OpenAI API usage with streaming response
+    response_start = time.time()
+
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are an academic advisor match expert who outputs structured JSON. Each advisor must be returned as a valid JSON object with no explanation or surrounding text. One object per line."},
+            {"role": "user", "content": advisor_prompt}
+        ],
+        temperature=0.7,
+        stream=True,
+    )
 
 
-# def search_university_info_internet(raw_results: List[NodeWithScore]) -> str:
-#     settings = get_settings()
-#     tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
- 
-     
-#     search_results_str = ""
-#     for result in raw_results:
-#         university_name = result.metadata["university"]
-#         web_result= tavily_client.search(query=f"What is the Deadline, GPA, and GRE requirement, to apply to a PhD in computer science at {university_name}")
-#         search_results_str += f"Deadline, GPA, and GRE requirement for {university_name}: {web_result}\n"
-    
-#     return search_results_str
+    buffer = ""
+    # Pattern to match complete JSON objects
+    json_pattern = re.compile(r'\{.*?\}(?=\s*\n|$)', re.DOTALL)
 
-# def mixed_context_with_internet(context: str, internet_search_results: str) -> str:
-#     mixed_context = []
-#     for i, context_str in enumerate(context):
-#         context_str += f"Internet search results for advisor {i+1} about gre, gpa, and deadline: {internet_search_results}\n"
-#         mixed_context.append(context_str)
-#     return mixed_context
+    for chunk in response:
+        delta = chunk.choices[0].delta
+        if hasattr(delta, "content") and delta.content:
+            buffer += delta.content
+
+            # Extract all complete JSON objects
+            for match in json_pattern.finditer(buffer):
+                json_str = match.group(0).strip()
+                try:
+                    data = json.loads(json_str)
+                    cart = Cart(**data)
+                    yield json.dumps(cart.model_dump()) + "\n"
+                except Exception as e:
+                    print(f"Skipping malformed JSON object: {e}")
+
+            # Keep only the remainder after the last complete match
+            last_match = list(json_pattern.finditer(buffer))[-1] if json_pattern.findall(buffer) else None
+            if last_match:
+                buffer = buffer[last_match.end():]
+
+    response_time = time.time() - response_start
+    print(f"Response time: {response_time:.2f} seconds")
+    total_time = time.time() - start_time
+    print(f"Total time: {total_time:.2f} seconds")

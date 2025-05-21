@@ -4,3 +4,8 @@ env/
 data/advisors/*
 data/advisors/
 ./data/advisors/
+*__pycache__/
+__pycache__/
+idea/
+.idea/*
+data/
