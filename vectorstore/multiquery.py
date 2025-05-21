@@ -29,3 +29,36 @@ Queries:
     content = response.choices[0].message.content
     queries = content.strip().split("\n")
     return [q.strip("-•1234567890. ") for q in queries if q.strip()]
+
+
+def is_relevant_question(question: str) -> bool:
+    """
+    Determines if the question is relevant to PhD advisor recommendation or academic research interests.
+    Returns TRUE if relevant, FALSE otherwise.
+    """
+    response = openai.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a classifier that determines whether a question is relevant to academic research or PhD advisor matching. "
+                    "Relevant queries include those asking about potential research topics, fields of study, matching with academic advisors, "
+                    "graduate or PhD programs, or academic exploration in various disciplines. Be inclusive of interdisciplinary or applied topics "
+                    "such as 'AI in finance', 'robotics in healthcare', etc."
+                )
+            },
+            {
+                "role": "user",
+                "content": (
+                    f"Is the following question related to academic research, research topics, or PhD advisor matching?\n\n"
+                    f"Question: \"{question}\"\n\n"
+                    "Answer only with 'yes' or 'no'."
+                )
+            }
+        ],
+        temperature=0
+    )
+
+    reply = response.choices[0].message.content.strip().lower()
+    return reply.startswith("yes")

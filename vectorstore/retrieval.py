@@ -105,7 +105,7 @@ Consider:
 
 - Output 3 to 6 such objects.
 - Each object should be printed **on its own line** with no explanation.
-- End each object with a newline `\\n`.
+- End each object with a newline \\n.
 - Do not output any surrounding commentary, text, or list brackets.
 
 Now generate the recommendations:
@@ -154,4 +154,3 @@ Now generate the recommendations:
     print(f"Response time: {response_time:.2f} seconds")
     total_time = time.time() - start_time
     print(f"Total time: {total_time:.2f} seconds")
-
