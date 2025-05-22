@@ -22,6 +22,7 @@ class Body(BaseModel):
 @router.post("/retrieve_advisors")
 def retrieve_advisors_api(body: Body):
     print(body)
+
     # Perform query validation before starting the advisors retrieval
     if not is_relevant_question(body.q):
         raise HTTPException(
