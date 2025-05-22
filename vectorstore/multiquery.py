@@ -1,12 +1,8 @@
-# from llama_index.core import PromptTemplate
-# from llama_index.llms.openai import OpenAI
 import openai
 from config import get_settings
 
 settings = get_settings()
 openai.api_key = settings.OPENAI_API_KEY
-#query_gen_prompt = PromptTemplate(query_gen_str)
-
 
 
 
@@ -32,10 +28,6 @@ Queries:
 
 
 def is_relevant_question(question: str) -> bool:
-    """
-    Determines if the question is relevant to PhD advisor recommendation or academic research interests.
-    Returns TRUE if relevant, FALSE otherwise.
-    """
     response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[

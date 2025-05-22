@@ -35,7 +35,7 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str]) ->
         api_key=settings.QDRANT_API_KEY,
     )
     embedding_search_start = time.time()
-    # Step 1 & 2: Embed and search each subquestion
+    # Step 1 & 2: Embed and search for each subquestion
     all_results: List[ScoredPoint] = []
     seen_ids = set()
     for subq in subquestions:
@@ -112,7 +112,7 @@ Now generate the recommendations:
 
 """
 
-    #5 Updated OpenAI API usage with streaming response
+    #5 Return response in stream using OpenAI's streaming response behaviour
     response_start = time.time()
 
     response = openai.chat.completions.create(
@@ -122,7 +122,7 @@ Now generate the recommendations:
             {"role": "user", "content": advisor_prompt}
         ],
         temperature=0.7,
-        stream=True,
+        stream=True, #indication to stream the response
     )
 
 
@@ -146,8 +146,16 @@ Now generate the recommendations:
                     print(f"Skipping malformed JSON object: {e}")
 
             # Keep only the remainder after the last complete match
-            last_match = list(json_pattern.finditer(buffer))[-1] if json_pattern.findall(buffer) else None
-            if last_match:
+
+            # Find all matches of complete JSON objects in the buffer
+            matches = list(json_pattern.finditer(buffer))
+
+            # Check if there are any matches
+            if matches:
+                # Get the last complete match
+                last_match = matches[-1]
+
+                # Remove everything from the buffer up to and including the last match
                 buffer = buffer[last_match.end():]
 
     response_time = time.time() - response_start
