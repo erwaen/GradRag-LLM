@@ -4,3 +4,11 @@ env/
 data/advisors/*
 data/advisors/
 ./data/advisors/
+/models/__pycache__/
+/vectorstore/__pycache__/
+__pycache__/
+idea/
+.idea/*
+data/
+./data/advisors/
+
