@@ -11,4 +11,6 @@ idea/
 .idea/*
 data/
 ./data/advisors/
-
+.env2
+venv/
+professor_scraper.log
