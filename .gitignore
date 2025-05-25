@@ -14,3 +14,5 @@ data/
 .env2
 venv/
 professor_scraper.log
+filtered2_chunks.json
+tokenCount.py
