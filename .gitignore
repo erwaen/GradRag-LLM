@@ -4,15 +4,6 @@ env/
 data/advisors/*
 data/advisors/
 ./data/advisors/
-/models/__pycache__/
-/vectorstore/__pycache__/
-__pycache__/
-idea/
-.idea/*
-data/
-./data/advisors/
-.env2
 venv/
-professor_scraper.log
-filtered2_chunks.json
-tokenCount.py
+.env2
+scrape_cache/

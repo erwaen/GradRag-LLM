@@ -1,20 +1,17 @@
 from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from .chunking import get_advisor_documents, store_advisor_documents
-from .retrieval import retrieve_advisors_stream
-from .multiquery import is_relevant_question
+from .retrieval import retrieve_advisors
 from pydantic import BaseModel
 from .multiquery import generate_queries
-from fastapi import HTTPException
 router = APIRouter()
 
 
-# @router.get("/doc_advisor")
-# def doc_advisor():
-#     documents = get_advisor_documents()
-#     index = store_advisor_documents(documents)
-#     return {"message": "Documents stored"} 
+@router.get("/doc_advisor")
+def doc_advisor():
+    documents = get_advisor_documents()
+    index = store_advisor_documents(documents)
+    return {"message": "Documents stored"} 
 
 class Body(BaseModel):
     q: str
@@ -22,13 +19,6 @@ class Body(BaseModel):
 @router.post("/retrieve_advisors")
 def retrieve_advisors_api(body: Body):
     print(body)
-
-    # Perform query validation before starting the advisors retrieval
-    if not is_relevant_question(body.q):
-        raise HTTPException(
-            status_code=422,
-            detail="Query is not related to PhD advisor matching or academic research."
-        )
     queries = generate_queries(body.q)
-    stream = retrieve_advisors_stream(body.q, queries)
-    return StreamingResponse(stream, media_type="text/plain")
+    results = retrieve_advisors(body.q, queries)
+    return {"results": results}

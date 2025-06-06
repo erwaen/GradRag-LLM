@@ -25,19 +25,22 @@ def get_advisor_documents() -> List[Document]:
     with open(latest_file, 'r') as f:
         data = json.load(f)
 
-    data = DataModel.model_validate(data)    
+    data = DataModel.model_validate(data)
     universities = data.universities
 
     advisor_documents = []
+    count_advisors = 0 
     for university in universities:
         for advisor in university.advisors:
+            # remember to modify the json file to follow the aproppiate structure.
+            count_advisors += 1
             advisor_size = len(str(advisor).encode('utf-8'))
             # skip advisor with more than 5mb, there is a problem when chunking  
             if advisor_size > 5_000_000:
                 print("skipping advisor", advisor.name)
                 continue
 
-            if "raw_text" in advisor.raw_content and advisor.raw_content["raw_text"] != "":
+            if advisor.raw_content.get("raw_text"):
                 # Filter papers with count > 0
                 active_areas = {
                     papers["name"]: papers["count"]
@@ -60,7 +63,6 @@ def get_advisor_documents() -> List[Document]:
                     }
                 )
                 advisor_documents.append(doc)
-    
     return advisor_documents
     
 def store_advisor_documents(documents: List[Document]):
