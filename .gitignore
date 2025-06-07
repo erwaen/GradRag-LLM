@@ -4,6 +4,12 @@ env/
 data/advisors/*
 data/advisors/
 ./data/advisors/
-venv/
-.env2
+/models/__pycache__/
+/vectorstore/__pycache__/
+__pycache__/
+idea/
+.idea/*
+data/
+./data/advisors/
 scrape_cache/
+venv/
