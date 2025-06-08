@@ -14,3 +14,4 @@ data/
 ./data/advisors/
 scrape_cache/
 venv/
+professor_scraper.log

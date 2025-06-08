@@ -5,3 +5,66 @@
 2025-06-07 22:38:24,386 - uvicorn.error - INFO - Waiting for application shutdown.
 2025-06-07 22:38:24,388 - uvicorn.error - INFO - Application shutdown complete.
 2025-06-07 22:38:24,389 - uvicorn.error - INFO - Finished server process [23368]
+2025-06-07 22:54:48,221 - uvicorn.error - INFO - Will watch for changes in these directories: ['C:\\Users\\59598\\Documents\\9no semestre\\GradRAG']
+2025-06-07 22:54:48,223 - uvicorn.error - INFO - Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2025-06-07 22:54:48,224 - uvicorn.error - INFO - Started reloader process [15004] using WatchFiles
+2025-06-07 22:54:51,733 - uvicorn.error - INFO - Started server process [17868]
+2025-06-07 22:54:51,735 - uvicorn.error - INFO - Waiting for application startup.
+2025-06-07 22:54:51,735 - uvicorn.error - INFO - Application startup complete.
+2025-06-07 22:54:56,649 - watchfiles.main - INFO - 3 changes detected
+2025-06-07 22:55:07,838 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 22:55:09,588 - watchfiles.main - INFO - 1 change detected
+2025-06-07 22:55:09,639 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 22:55:10,673 - httpx - INFO - HTTP Request: GET https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333 "HTTP/1.1 200 OK"
+2025-06-07 22:55:11,247 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:55:11,990 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:55:12,706 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:55:13,083 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:55:13,621 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:55:13,836 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:55:15,021 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:55:15,234 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:55:16,440 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 22:55:47,131 - watchfiles.main - INFO - 346 changes detected
+2025-06-07 22:55:47,142 - uvicorn.error - WARNING - WatchFiles detected changes in '.venv\Lib\site-packages\sqlite_utils\plugins.py', '.venv\Lib\site-packages\puremagic\__init__.py', '.venv\Lib\site-packages\pluggy\_hooks.py', '.venv\Lib\site-packages\ulid\__main__.py', '.venv\Lib\site-packages\tabulate\__init__.py', '.venv\Lib\site-packages\llm\default_plugins\default_tools.py', '.venv\Lib\site-packages\sqlite_utils\db.py', '.venv\Lib\site-packages\tabulate\version.py', '.venv\Lib\site-packages\ulid\constants.py', '.venv\Lib\site-packages\pluggy\_callers.py', '.venv\Lib\site-packages\llm\plugins.py', '.venv\Lib\site-packages\sqlite_utils\__init__.py', '.venv\Lib\site-packages\puremagic\__main__.py', '.venv\Lib\site-packages\llm\tools.py', '.venv\Lib\site-packages\sqlite_fts4\__init__.py', '.venv\Lib\site-packages\llm\__main__.py', '.venv\Lib\site-packages\llm\templates.py', '.venv\Lib\site-packages\puremagic\main.py', '.venv\Lib\site-packages\sqlite_migrate\__init__.py', '.venv\Lib\site-packages\llm\utils.py', '.venv\Lib\site-packages\sqlite_utils\hookspecs.py', '.venv\Lib\site-packages\sqlite_migrate\sqlite_utils_plugin.py', '.venv\Lib\site-packages\sqlite_utils\utils.py', '.venv\Lib\site-packages\sqlite_utils\recipes.py', '.venv\Lib\site-packages\sqlite_utils\cli.py', '.venv\Lib\site-packages\click_default_group.py', '.venv\Lib\site-packages\sqlite_utils\__main__.py', '.venv\Lib\site-packages\pluggy\_result.py', '.venv\Lib\site-packages\pluggy\_tracing.py', '.venv\Lib\site-packages\llm\migrations.py', '.venv\Lib\site-packages\llm\hookspecs.py', '.venv\Lib\site-packages\llm\embeddings.py', '.venv\Lib\site-packages\pluggy\_manager.py', '.venv\Lib\site-packages\llm\default_plugins\openai_models.py', '.venv\Lib\site-packages\ulid\__init__.py', '.venv\Lib\site-packages\llm\embeddings_migrations.py', '.venv\Lib\site-packages\pluggy\_version.py', '.venv\Lib\site-packages\ulid\base32.py', '.venv\Lib\site-packages\llm\__init__.py', '.venv\Lib\site-packages\pluggy\__init__.py', '.venv\Lib\site-packages\llm\models.py', '.venv\Lib\site-packages\pluggy\_warnings.py', '.venv\Lib\site-packages\llm\default_plugins\__init__.py', '.venv\Lib\site-packages\llm\cli.py', '.venv\Lib\site-packages\condense_json\__init__.py', '.venv\Lib\site-packages\llm\errors.py'. Reloading...
+2025-06-07 22:56:35,100 - uvicorn.error - INFO - Shutting down
+2025-06-07 22:56:35,209 - uvicorn.error - INFO - Waiting for application shutdown.
+2025-06-07 22:56:35,209 - uvicorn.error - INFO - Application shutdown complete.
+2025-06-07 22:56:35,210 - uvicorn.error - INFO - Finished server process [17868]
+2025-06-07 22:56:36,070 - watchfiles.main - INFO - 8 changes detected
+2025-06-07 22:56:36,425 - watchfiles.main - INFO - 1 change detected
+2025-06-07 22:56:39,136 - uvicorn.error - INFO - Started server process [10304]
+2025-06-07 22:56:39,137 - uvicorn.error - INFO - Waiting for application startup.
+2025-06-07 22:56:39,138 - uvicorn.error - INFO - Application startup complete.
+2025-06-07 22:57:19,506 - uvicorn.error - INFO - Will watch for changes in these directories: ['C:\\Users\\59598\\Documents\\9no semestre\\GradRAG']
+2025-06-07 22:57:19,507 - uvicorn.error - INFO - Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2025-06-07 22:57:19,508 - uvicorn.error - INFO - Started reloader process [18624] using WatchFiles
+2025-06-07 22:57:22,668 - uvicorn.error - INFO - Started server process [24168]
+2025-06-07 22:57:22,669 - uvicorn.error - INFO - Waiting for application startup.
+2025-06-07 22:57:22,670 - uvicorn.error - INFO - Application startup complete.
+2025-06-07 22:57:47,096 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 22:57:48,591 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 22:57:49,580 - httpx - INFO - HTTP Request: GET https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333 "HTTP/1.1 200 OK"
+2025-06-07 22:57:50,275 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:57:50,978 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:57:51,545 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:57:51,915 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:57:52,847 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:57:53,038 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:57:54,599 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 22:57:54,842 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 22:57:56,234 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 23:01:27,521 - watchfiles.main - INFO - 3 changes detected
+2025-06-07 23:01:37,708 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 23:01:38,595 - watchfiles.main - INFO - 1 change detected
+2025-06-07 23:01:39,308 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-07 23:01:40,351 - httpx - INFO - HTTP Request: GET https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333 "HTTP/1.1 200 OK"
+2025-06-07 23:01:40,950 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 23:01:41,664 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 23:01:42,337 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 23:01:42,701 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 23:01:43,514 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 23:01:43,712 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 23:01:44,358 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-06-07 23:01:44,562 - httpx - INFO - HTTP Request: POST https://6eb560c9-ceb0-4fe4-a430-d0cf594a768f.us-east4-0.gcp.cloud.qdrant.io:6333/collections/advisors2/points/search "HTTP/1.1 200 OK"
+2025-06-07 23:01:45,856 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
