@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  gradrag-app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: gradrag-llm
+    ports:
+      - "8000:8000"  # Puerto personalizado
+    volumes:
+      - .:/app  # Mapea el directorio actual al contenedor
+      - /app/venv  # Excluye venv del mapeo
+      - /app/__pycache__  # Excluye __pycache__ del mapeo
+      - /app/scrape_cache  # Excluye cache del mapeo
+    env_file:
+      - .env  # Carga variables de entorno desde .env
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # Comando para ejecutar FastAPI en modo desarrollo
+    command: ["fastapi", "dev", "main.py", "--host", "0.0.0.0", "--port", "8000"]
