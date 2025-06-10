@@ -22,8 +22,8 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("professor_scraper.log"),
-        logging.StreamHandler()
+       # logging.FileHandler("professor_scraper.log"),
+        #logging.StreamHandler()
     ]
 )
 logger = logging.getLogger("ProfessorScraper")

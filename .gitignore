@@ -11,7 +11,7 @@ idea/
 .idea/*
 data/
 /crawler/__pycache__
-./data/advisors/
+__pycache__
 scrape_cache/
 venv/
 professor_scraper.log

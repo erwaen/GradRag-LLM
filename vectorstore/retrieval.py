@@ -105,6 +105,11 @@ Consider:
 
 - Output 3 to 6 such objects.
 - Each object should be printed **on its own line** with no explanation.
+- application_deadline (format: "Month D, YYYY") — return not found if uncertain
+- gpa_requirement — return not found if unknown
+- gre_requirement — return not found if unknown
+- funding_available - return not found if unknown
+- website - return not found if unknown
 - End each object with a newline \\n.
 - Do not output any surrounding commentary, text, or list brackets.
 

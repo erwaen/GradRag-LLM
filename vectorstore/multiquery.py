@@ -1,12 +1,12 @@
 import openai
 from config import get_settings
-
+from typing import List
 settings = get_settings()
 openai.api_key = settings.OPENAI_API_KEY
 
 
 
-def generate_queries(query: str, num_queries: int = 4):
+def generate_queries(query: str, num_queries: int = 4) -> List[str]:
     prompt =  f"""\
 You are a helpful assistant that generates multiple search queries based on the user's single input query. \
 Generate {num_queries} search queries, one on each line, focusing on searching \
