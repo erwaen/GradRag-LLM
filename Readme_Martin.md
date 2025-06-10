@@ -109,18 +109,6 @@ La respuesta debería ser:
 }
 ```
 
-## Flujo Completo Resumido
-
-```mermaid
-graph TD
-    A[1. Levantar Docker] --> B[2. Ir a /docs]
-    B --> C[3. Verificar /status]
-    C --> D[4. Ejecutar /scrape]
-    D --> E[5. Ejecutar parse_scraped_data.py]
-    E --> F[6. Almacenar con /doc_advisor]
-    F --> G[Sistema listo para consultas RAG]
-```
-
 ## Comandos Útiles
 
 ### Acceder al contenedor para debugging:
