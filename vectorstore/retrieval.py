@@ -121,7 +121,7 @@ Now generate the recommendations:
     response_start = time.time()
 
     response = openai.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are an academic advisor match expert who outputs structured JSON. Each advisor must be returned as a valid JSON object with no explanation or surrounding text. One object per line."},
             {"role": "user", "content": advisor_prompt}
