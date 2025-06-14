@@ -13,7 +13,7 @@ CSV_URL = "https://csrankings.org/csrankings.csv"
 
 # https://csrankings.org/#/index?vision
 cs_categories = {
-    # "ai": "Artificial intelligence",
+    "ai": "Artificial intelligence",
     # "vision": "Computer vision",
     # "mlmining": "Machine Learning",
     # "nlp": "Natural language processing",
@@ -36,10 +36,10 @@ cs_categories = {
     # "graph": "Computer graphics",
     # "bio": "Comp. bio & bioinformatics",
     # "csed": "Computer science education",
-    "ecom": "Economics & computation",
-    "chi": "Human-computer interaction",
-    "robotics": "Robotics",
-    "visualization": "Visualization",
+    # "ecom": "Economics & computation",
+    # "chi": "Human-computer interaction",
+    # "robotics": "Robotics",
+    # "visualization": "Visualization",
 }
 
 import requests

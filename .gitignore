@@ -10,9 +10,8 @@ __pycache__/
 idea/
 .idea/*
 data/
-./data/advisors/
-.env2
+/crawler/__pycache__
+__pycache__
+scrape_cache/
 venv/
 professor_scraper.log
-filtered2_chunks.json
-tokenCount.py

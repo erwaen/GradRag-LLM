@@ -5,6 +5,17 @@
 **/data/advisors/*
 **/data/advisors
 **/data/advisors
+.env
+.git
+.gitignore
+.dockerignore
+Dockerfile
+__pycache__/
+.venv
+venv
+*.pyc
+*.pyo
+*.pyd
 
 # flyctl launch added from env/lib/python3.9/site-packages/llama_index/cli/new_package/common/.gitignore
 env/lib/python3.9/site-packages/llama_index/cli/new_package/common/**/llama_index/_static

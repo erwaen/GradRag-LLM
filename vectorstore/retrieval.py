@@ -105,6 +105,11 @@ Consider:
 
 - Output 3 to 6 such objects.
 - Each object should be printed **on its own line** with no explanation.
+- application_deadline (format: "Month D, YYYY") — return not found if uncertain
+- gpa_requirement — return not found if unknown
+- gre_requirement — return not found if unknown
+- funding_available - return not found if unknown
+- website - return not found if unknown
 - End each object with a newline \\n.
 - Do not output any surrounding commentary, text, or list brackets.
 
@@ -116,7 +121,7 @@ Now generate the recommendations:
     response_start = time.time()
 
     response = openai.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are an academic advisor match expert who outputs structured JSON. Each advisor must be returned as a valid JSON object with no explanation or surrounding text. One object per line."},
             {"role": "user", "content": advisor_prompt}
