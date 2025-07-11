@@ -13,5 +13,4 @@ class Card(BaseModel):
 
 class Cards(BaseModel):
     """Data model for a list of carts."""
-
-    carts: list[Card]
+    cards: list[Card]

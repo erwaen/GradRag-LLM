@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
-from .chunking import get_advisor_documents, store_advisor_documents
+# from .chunking import get_advisor_documents, store_advisor_documents
 from .retrieval import retrieve_advisors_stream
 from .multiquery import is_relevant_question
 from pydantic import BaseModel
@@ -18,11 +18,11 @@ def match_cv_advisors(cv_file: UploadFile):
     stream = match_advisors_from_cv_file(cv_file)
     return StreamingResponse(stream, media_type="text/plain")
 
-@router.get("/doc_advisor")
-def doc_advisor():
-    documents = get_advisor_documents()
-    # index = store_advisor_documents(documents)
-    return {"message": "Documents stored"} 
+# @router.get("/doc_advisor")
+# def doc_advisor():
+#     documents = get_advisor_documents()
+#     # index = store_advisor_documents(documents)
+#     return {"message": "Documents stored"} 
 
 class Body(BaseModel):
     q: str

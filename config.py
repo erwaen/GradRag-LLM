@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     STORAGE_DIR: str
     QDRANT_URL: str
     QDRANT_API_KEY: str
+    COLLECTION_NAME: str # e.g from qdrant
     # COHERE_API_KEY: str
     STORAGE_DIR: str = "data"
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8",)
