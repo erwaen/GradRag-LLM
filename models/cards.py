@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from models.advisor import AdvisorMatch
 from typing import Optional
 
-class Cart(BaseModel):
+class Card(BaseModel):
     """Data model for a cart. to describe PhD application with advisor"""
     advisor: AdvisorMatch
     university: str
@@ -11,7 +11,7 @@ class Cart(BaseModel):
     gre_requirement: Optional[str]
     funding_available: Optional[str] # could be "Full", "Partial", "None"
 
-class Carts(BaseModel):
+class Cards(BaseModel):
     """Data model for a list of carts."""
 
-    carts: list[Cart]
+    carts: list[Card]
