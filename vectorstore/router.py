@@ -26,10 +26,12 @@ def match_cv_advisors(cv_file: UploadFile):
 
 class Body(BaseModel):
     q: str
+    model: str = "gpt"
 
 @router.post("/retrieve_advisors")
 def retrieve_advisors_api(body: Body):
     print(body)
+    model = body.model.lower()
 
     # Perform query validation before starting the advisors retrieval
     if not is_relevant_question(body.q):
@@ -38,5 +40,5 @@ def retrieve_advisors_api(body: Body):
             detail="Query is not related to PhD advisor matching or academic research."
         )
     queries = generate_queries(body.q)
-    stream = retrieve_advisors_stream(body.q, queries)
+    stream = retrieve_advisors_stream(body.q, queries, model)
     return StreamingResponse(stream, media_type="text/plain")

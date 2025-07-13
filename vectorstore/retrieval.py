@@ -1,6 +1,7 @@
 from config import get_settings
 from qdrant_client import QdrantClient
 import openai
+from typing import List, Literal
 from openai import OpenAI
 from qdrant_client.models import SearchParams 
 from qdrant_client.http.models import  ScoredPoint
@@ -11,6 +12,7 @@ import re
 from typing import List
 from models.cards import Cards as CardsModel, Card as OneCardModel
 from json import JSONDecodeError
+from llmmodels.llm import LLMFactory 
 
 settings = get_settings()
 OPENAI_CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY) 
@@ -89,7 +91,7 @@ def get_embedding(question: str) -> List[float]:
     return response.data[0].embedding
 
 
-def retrieve_advisors_stream(original_question: str, subquestions: List[str]) -> Generator[str, None, None]:
+def retrieve_advisors_stream(original_question: str, subquestions: List[str], model:Literal["gemini", "gpt"])-> Generator[str, None, None]:
     start_time = time.time()
 
     embedding_search_start = time.time()
@@ -112,10 +114,8 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str]) ->
     embedding_search_time = time.time() - embedding_search_start
     print(f"Embedding and search time: {embedding_search_time:.2f} seconds")
 
-
     # 3. Sort and build context from top results
     top_results = sorted(all_results, key=lambda r: r.score, reverse=True)[:10]
-    
     # generate prompt
     advisor_prompt = generate_advisor_prompt(top_results, original_question)
 
@@ -127,45 +127,73 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str]) ->
     # Look for objects that start with {"advisor": and contain all required fields
     json_pattern = re.compile(r'\{"advisor":\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}[^}]*\}')
 
-    with OPENAI_CLIENT.responses.stream(
-        model="gpt-4o-mini",
-        input=[
+    llm_model = LLMFactory.create_model(model)
+
+    for chunk in llm_model.stream(
+        messages=[
             {"role": "system", "content": "You are an academic advisor match expert who answer the user with a list of suggested advisors for them"},
             {"role": "user", "content": advisor_prompt}
         ],
         temperature=0,
-        text_format=CardsModel,
-    ) as stream:
-        for event in stream:
-            if event.type == "response.output_text.delta":
-                print(event.delta, end="")
-                buffer += event.delta
+        structure_model=CardsModel,
+    ):
+        buffer += chunk
+        # Extract all complete Card JSON objects from the buffer
+        for match in json_pattern.finditer(buffer):
+            json_str = match.group(0).strip()
+            try:
+                card_obj = json.loads(json_str)
+                card = OneCardModel.parse_obj(card_obj)
+                yield json.dumps(card.model_dump()) + "\n"
+            except JSONDecodeError as e:
+                print(f"Error parsing card: {e}")
+                continue
 
-                # Extract all complete Card JSON objects from the buffer
-                for match in json_pattern.finditer(buffer):
-                    json_str = match.group(0).strip()
-                    try:
-                        card_obj = json.loads(json_str)
-                        card = OneCardModel.parse_obj(card_obj)
-                        yield json.dumps(card.model_dump()) + "\n"
-                    except Exception as e:
-                        print(f"Error parsing card: {e}")
-                        continue
+        # Keep only the remainder after the last complete match
+        matches = list(json_pattern.finditer(buffer))
+        if matches:
+            last_match = matches[-1]
+            buffer = buffer[last_match.end():]
 
-                # Keep only the remainder after the last complete match
-                matches = list(json_pattern.finditer(buffer))
-                if matches:
-                    last_match = matches[-1]
-                    buffer = buffer[last_match.end():]
-
-            elif event.type == "response.refusal.delta":
-                print(event.delta, end="")
-
-            elif event.type == "response.error":
-                print(event.error, end="")
-
-            elif event.type == "response.completed":
-                print("Completed")
+    # with OPENAI_CLIENT.responses.stream(
+    #     model="gpt-4o-mini",
+    #     input=[
+    #         {"role": "system", "content": "You are an academic advisor match expert who answer the user with a list of suggested advisors for them"},
+    #         {"role": "user", "content": advisor_prompt}
+    #     ],
+    #     temperature=0,
+    #     text_format=CardsModel,
+    # ) as stream:
+    #     for event in stream:
+    #         if event.type == "response.output_text.delta":
+    #             print(event.delta, end="")
+    #             buffer += event.delta
+    #
+    #             # Extract all complete Card JSON objects from the buffer
+    #             for match in json_pattern.finditer(buffer):
+    #                 json_str = match.group(0).strip()
+    #                 try:
+    #                     card_obj = json.loads(json_str)
+    #                     card = OneCardModel.parse_obj(card_obj)
+    #                     yield json.dumps(card.model_dump()) + "\n"
+    #                 except Exception as e:
+    #                     print(f"Error parsing card: {e}")
+    #                     continue
+    #
+    #             # Keep only the remainder after the last complete match
+    #             matches = list(json_pattern.finditer(buffer))
+    #             if matches:
+    #                 last_match = matches[-1]
+    #                 buffer = buffer[last_match.end():]
+    #
+    #         elif event.type == "response.refusal.delta":
+    #             print(event.delta, end="")
+    #
+    #         elif event.type == "response.error":
+    #             print(event.error, end="")
+    #
+    #         elif event.type == "response.completed":
+    #             print("Completed")
 
             
 
