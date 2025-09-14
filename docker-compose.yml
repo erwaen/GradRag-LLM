@@ -5,7 +5,7 @@ services:
       dockerfile: dockerfile
     container_name: gradrag-llm
     ports:
-      - "8000:8000"
+      - "8102:8000"
     volumes:
       - .:/app
     env_file:
@@ -13,5 +13,23 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-    restart: unless-stopped
+    restart: always
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      - qdrant
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant-vector-db
+    ports:
+      - "6333:6333"
+    volumes:
+      - ./qdrant_collections:/qdrant/snapshots
+      - qdrant_storage:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: always
+
+volumes:
+  qdrant_storage:
