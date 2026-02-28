@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Generator 
+from typing import Generator, Literal
 from openai import OpenAI
 from config import get_settings
 from models.cards import Cards as CardsModel
-from typing import Generator,  Literal
-from abc import ABC, abstractmethod
 from google import genai
 
 settings = get_settings()

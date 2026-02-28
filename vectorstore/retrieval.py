@@ -1,30 +1,24 @@
 from config import get_settings
 from qdrant_client import QdrantClient
-import openai
-from typing import List, Literal
+from typing import List, Literal, Generator
 from openai import OpenAI
-from qdrant_client.models import SearchParams 
-from qdrant_client.http.models import  ScoredPoint
-from typing import Generator
+from qdrant_client.models import SearchParams
+from qdrant_client.http.models import ScoredPoint
 import time
 import json
 import re
-from typing import List
 from models.cards import Cards as CardsModel, Card as OneCardModel
 from json import JSONDecodeError
-from llmmodels.llm import LLMFactory 
+from llmmodels.llm import LLMFactory
 
 settings = get_settings()
-OPENAI_CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY) 
+OPENAI_CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 QDRANT_CLIENT = QdrantClient(
     url=settings.QDRANT_URL,
     api_key=settings.QDRANT_API_KEY or None,
 )
 
-import json
-
-import json
 
 def generate_advisor_prompt(top_results, original_question):
     """
@@ -67,7 +61,7 @@ def generate_advisor_prompt(top_results, original_question):
 Given the following retrieved information:
 {context_str}
 
-Based on the retrieved professors and their research work, generate a list of recommended advisors 
+Based on the retrieved professors and their research work, generate a list of recommended advisors
 for a PhD student with the following questions:
 {original_question}
 
@@ -78,20 +72,19 @@ for a PhD student with the following questions:
 
 Now generate the recommendations:
 """
-    
+
     return advisor_prompt
 
 
-
 def get_embedding(question: str) -> List[float]:
-    response=OPENAI_CLIENT.embeddings.create(
+    response = OPENAI_CLIENT.embeddings.create(
         input=question,
         model="text-embedding-3-small"
     )
     return response.data[0].embedding
 
 
-def retrieve_advisors_stream(original_question: str, subquestions: List[str], model:Literal["gemini", "gpt"])-> Generator[str, None, None]:
+def retrieve_advisors_stream(original_question: str, subquestions: List[str], model: Literal["gemini", "gpt"]) -> Generator[str, None, None]:
     start_time = time.time()
 
     embedding_search_start = time.time()
@@ -116,15 +109,11 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str], mo
 
     # 3. Sort and build context from top results
     top_results = sorted(all_results, key=lambda r: r.score, reverse=True)[:10]
-    # generate prompt
     advisor_prompt = generate_advisor_prompt(top_results, original_question)
 
-    #5 Return response in stream using OpenAI's streaming response behaviour
     response_start = time.time()
 
     buffer = ""
-    # Regex pattern to match complete Card objects (not nested advisor objects)
-    # Look for objects that start with {"advisor": and contain all required fields
     json_pattern = re.compile(r'\{"advisor":\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}[^}]*\}')
 
     llm_model = LLMFactory.create_model(model)
@@ -138,7 +127,6 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str], mo
         structure_model=CardsModel,
     ):
         buffer += chunk
-        # Extract all complete Card JSON objects from the buffer
         for match in json_pattern.finditer(buffer):
             json_str = match.group(0).strip()
             try:
@@ -149,84 +137,10 @@ def retrieve_advisors_stream(original_question: str, subquestions: List[str], mo
                 print(f"Error parsing card: {e}")
                 continue
 
-        # Keep only the remainder after the last complete match
         matches = list(json_pattern.finditer(buffer))
         if matches:
             last_match = matches[-1]
             buffer = buffer[last_match.end():]
-
-    # with OPENAI_CLIENT.responses.stream(
-    #     model="gpt-4o-mini",
-    #     input=[
-    #         {"role": "system", "content": "You are an academic advisor match expert who answer the user with a list of suggested advisors for them"},
-    #         {"role": "user", "content": advisor_prompt}
-    #     ],
-    #     temperature=0,
-    #     text_format=CardsModel,
-    # ) as stream:
-    #     for event in stream:
-    #         if event.type == "response.output_text.delta":
-    #             print(event.delta, end="")
-    #             buffer += event.delta
-    #
-    #             # Extract all complete Card JSON objects from the buffer
-    #             for match in json_pattern.finditer(buffer):
-    #                 json_str = match.group(0).strip()
-    #                 try:
-    #                     card_obj = json.loads(json_str)
-    #                     card = OneCardModel.parse_obj(card_obj)
-    #                     yield json.dumps(card.model_dump()) + "\n"
-    #                 except Exception as e:
-    #                     print(f"Error parsing card: {e}")
-    #                     continue
-    #
-    #             # Keep only the remainder after the last complete match
-    #             matches = list(json_pattern.finditer(buffer))
-    #             if matches:
-    #                 last_match = matches[-1]
-    #                 buffer = buffer[last_match.end():]
-    #
-    #         elif event.type == "response.refusal.delta":
-    #             print(event.delta, end="")
-    #
-    #         elif event.type == "response.error":
-    #             print(event.error, end="")
-    #
-    #         elif event.type == "response.completed":
-    #             print("Completed")
-
-            
-
-
-    # Pattern to match complete JSON objects
-    
-    # for chunk in response:
-    #     delta = chunk.choices[0].delta
-    #     if hasattr(delta, "content") and delta.content:
-    #         buffer += delta.content
-    #
-    #         # Extract all complete JSON objects
-    #         for match in json_pattern.finditer(buffer):
-    #             json_str = match.group(0).strip()
-    #             try:
-    #                 data = json.loads(json_str)
-    #                 cart = CardModel(**data)
-    #                 yield json.dumps(cart.model_dump()) + "\n"
-    #             except Exception as e:
-    #                 print(f"Skipping malformed JSON object: {e}")
-    #
-    #         # Keep only the remainder after the last complete match
-    #
-    #         # Find all matches of complete JSON objects in the buffer
-    #         matches = list(json_pattern.finditer(buffer))
-    #
-    #         # Check if there are any matches
-    #         if matches:
-    #             # Get the last complete match
-    #             last_match = matches[-1]
-    #
-    #             # Remove everything from the buffer up to and including the last match
-                # buffer = buffer[last_match.end():]
 
     response_time = time.time() - response_start
     print(f"Response time: {response_time:.2f} seconds")

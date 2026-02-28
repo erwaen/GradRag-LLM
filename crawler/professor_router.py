@@ -13,8 +13,6 @@ import re
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
 from . import parse_scraped_data as psd
-import os
-
 # --- Configuration & Data Definitions ---
 settings = get_settings()
 # Configure logging
@@ -297,48 +295,17 @@ def get_professors_from_ranking():
         return []
 
 
-def save_scraped_data(data, output_file = os.getcwd() + "/logs" + "scraped_professors.json"):
+def save_scraped_data(data, output_file=os.getcwd() + "/logs/" + "scraped_professors.json"):
     """Save the scraped data to a JSON file."""
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        breakpoint()
         logger.info(f"Saved scraped data to {output_file}")
         return True
     except Exception as e:
         logger.error(f"Error saving scraped data: {str(e)}")
         return False
 
-
-def load_scraped_data(input_file="scraped_professors.json"):
-    """Load previously scraped data from a JSON file."""
-    try:
-        if not os.path.exists(input_file):
-            logger.error(f"File not found: {input_file}")
-            return []
-
-        with open(input_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        logger.info(f"Loaded {len(data)} scraped professor records from {input_file}")
-        return data
-    except Exception as e:
-        logger.error(f"Error loading scraped data: {str(e)}")
-        return []
-
-def create_stable_id(name, homepage):
-    """Create a stable ID for a professor based on name and homepage."""
-    # Create a unique string
-    unique_string = f"{name}|{homepage}"
-
-    # Generate a hash
-    hash_object = hashlib.md5(unique_string.encode())
-    hex_dig = hash_object.hexdigest()
-
-    # Convert to integer (Qdrant uses int64)
-    # Take first 16 chars of hex (64 bits) and convert to int
-    int_id = int(hex_dig[:16], 16) % (2 ** 63)  # Ensure it fits in int64
-
-    return int_id
 
 def clear_cache():
     """Clear the scraping cache."""
@@ -380,10 +347,6 @@ class ScrapeRequest(BaseModel):
     save_file: str = Field(os.getcwd() + "/logs/" + "scraped_professors.json", description="Filename to save scraped data")
     max_workers: int = Field(MAX_WORKERS, description="Maximum number of parallel workers")
     use_cache: bool = Field(True, description="Whether to use cache for scraping")
-
-class CacheRequest(BaseModel):
-    clear: bool = Field(False, description="Whether to clear the cache")
-
 
 # Store for background tasks
 task_store = {}

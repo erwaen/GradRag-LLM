@@ -228,24 +228,6 @@ def load_authors_publications(url=AUTHOR_INFO_URL):
     print(f"Successfully processed author publications from {url}")
     return df
 
-def load_author_details(url=AUTHOR_URL):
-    author_details = {}
-    df = download_csv_to_dataframe(url)
-    if df is None: print("Failed to load author details."); return {}
-    try:
-        for _, row in df.iterrows():
-            name = str(row["name"]).strip()
-            match = NAME_MATCHER.match(name)
-            if match: name = match.group(1).strip()
-            if name:
-                homepage = str(row["homepage"]).strip()
-                scholar_id = str(row["scholarid"]).strip()
-                author_details[name] = {"homepage": homepage, "scholar_id": scholar_id}
-                if scholar_id: author_details[scholar_id] = {"name": name, "homepage": homepage}
-        print(f"Successfully processed author details from {url}")
-        return author_details
-    except KeyError as e: print(f"Error processing Author details: Missing expected column {e}"); return {}
-    except Exception as e: print(f"Error processing author details from {url}: {e}"); return {}
 def load_author_info(url=AUTHOR_URL):
     """Loads author info (homepage, scholarid) from URL and extracts notes."""
     homepages = {}

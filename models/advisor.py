@@ -1,13 +1,5 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime
-
-class AdvisorApplication(BaseModel):
-    deadline: datetime
-    requirements: List[str]
-    funding_available: bool
-    gre_required: bool
-    minimum_gpa: Optional[float]
 
 class AdvisorMatch(BaseModel):
     """

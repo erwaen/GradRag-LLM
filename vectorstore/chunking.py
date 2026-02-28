@@ -1,19 +1,10 @@
 from llama_index.core import Document
 from typing import List
-from pathlib import Path
 import json
 import logging
 import glob
 import re
-from crawler.data_model import University, Advisor, DataModel, Papers
-from qdrant_client import QdrantClient
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.embeddings.openai import  OpenAIEmbedding
-
-from llama_index.core import GPTVectorStoreIndex, VectorStoreIndex, StorageContext
-from llama_index.core import Settings
-
-from config import get_settings
+from crawler.data_model import DataModel
 
 logger = logging.getLogger(__name__)
 
@@ -65,40 +56,4 @@ def get_advisor_documents() -> List[Document]:
                 advisor_documents.append(doc)
     return advisor_documents
     
-def store_advisor_documents(documents: List[Document]):
-    settings = get_settings()
-    # Initialize Qdrant client
-    client = QdrantClient(
-        url=settings.QDRANT_URL,
-        api_key=settings.QDRANT_API_KEY,
-    )
-    
-    # service_context = ServiceContext.from_defaults(chunk_size_limit=512)
-    # Settings.embed_model = HuggingFaceEmbedding(
-    #     model_name="BAAI/bge-small-en-v1.5"
-    # )
-    Settings.embed_model = OpenAIEmbedding(
-        api_key=settings.OPENAI_API_KEY,
-        model="text-embedding-3-small"
-    )
-    
-    Settings.chunk_size= 512 
-    # Create vector store
-    vector_store = QdrantVectorStore(client=client, collection_name="advisors2")
-    
-
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-
-    index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
-    # index = VectorStoreIndex.from_documents(documents,  show_progress=True)
-   
-    
-    logger.info(f"Stored {len(documents)} advisor documents in Qdrant")
-    return index
-
-    
-    
-
-
-
 
