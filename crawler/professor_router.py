@@ -1,6 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks
-from pydantic import BaseModel, Field
-from typing import Optional, Dict
+from fastapi import APIRouter
 import logging
 import os
 import json
@@ -275,10 +273,12 @@ def get_professors_from_ranking():
         logger.info("Loading professor data from ranking file...")
         homepages, scholar_ids, author_notes = psd.load_author_info()
 
-        # Create a list of professors with their metadata
+        # Create a list of professors with their metadata, deduplicating by homepage URL
         professors = []
+        seen_urls = set()
         for name, homepage in homepages.items():
-            if homepage and homepage.strip():
+            if homepage and homepage.strip() and homepage not in seen_urls:
+                seen_urls.add(homepage)
                 professor = {
                     "name": name,
                     "homepage": homepage,
@@ -298,6 +298,7 @@ def get_professors_from_ranking():
 def save_scraped_data(data, output_file=os.getcwd() + "/logs/" + "scraped_professors.json"):
     """Save the scraped data to a JSON file."""
     try:
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         logger.info(f"Saved scraped data to {output_file}")
@@ -337,65 +338,8 @@ def get_cache_stats():
         return {"count": 0, "size_bytes": 0, "size_mb": 0}
 
 
-# FastAPI Router and Models
 router = APIRouter()
 
-
-# Define Pydantic models for request/response
-class ScrapeRequest(BaseModel):
-    max_professors: int = Field(10, description="Maximum number of professors to scrape")
-    save_file: str = Field(os.getcwd() + "/logs/" + "scraped_professors.json", description="Filename to save scraped data")
-    max_workers: int = Field(MAX_WORKERS, description="Maximum number of parallel workers")
-    use_cache: bool = Field(True, description="Whether to use cache for scraping")
-
-# Store for background tasks
-task_store = {}
-
-
-def generate_task_id():
-    """Generate a unique task ID"""
-    return hashlib.md5(str(time.time()).encode()).hexdigest()
-
-
-# Background task functions
-async def scrape_task(task_id: str, max_professors: int, save_file: str, max_workers: int, use_cache: bool):
-    """Background task for scraping professor data"""
-    try:
-        task_store[task_id] = {"status": "running", "message": "Starting scraping task", "progress": 0}
-
-        # If not using cache, clear it first
-        if not use_cache:
-            clear_cache()
-            task_store[task_id]["message"] = "Cache cleared, starting scraping"
-
-        # Get professor data
-        professors = get_professors_from_ranking()
-        task_store[task_id]["progress"] = 10
-        task_store[task_id]["message"] = f"Found {len(professors)} professors"
-        logger.info(f"Found {len(professors)} professors")
-
-        # Scrape professor homepages in parallel
-        scraped_data, stats = scrape_professors_parallel(
-            professors,
-            max_professors=max_professors,
-            max_workers=max_workers
-        )
-        task_store[task_id]["progress"] = 90
-        task_store[task_id]["message"] = f"Scraped {len(scraped_data)} professors ({stats['cached_count']} from cache)"
-
-        # Save the scraped data
-        save_scraped_data(scraped_data, save_file)
-
-        task_store[task_id] = {
-            "status": "completed",
-            "message": f"Completed scraping {len(scraped_data)} professors in {stats['elapsed_seconds']:.2f}s",
-            "progress": 100,
-            "result_file": save_file,
-            "stats": stats
-        }
-    except Exception as e:
-        logger.error(f"Error in scraping task: {str(e)}")
-        task_store[task_id] = {"status": "failed", "message": f"Error: {str(e)}", "progress": 100}
 
 # API Endpoints
 @router.get("/professor/status")
@@ -416,32 +360,3 @@ async def professor_status():
         }
     }
 
-class TaskStatus(BaseModel):
-    task_id: str
-    status: str
-    message: str
-    progress: Optional[float] = None
-    result_file: Optional[str] = None
-    stats: Optional[Dict] = None
-
-@router.post("/professor/scrape", response_model=TaskStatus)
-async def scrape_professors_endpoint(
-        background_tasks: BackgroundTasks,
-        request: ScrapeRequest
-):
-    """Start a background task to scrape professor data"""
-    task_id = generate_task_id()
-    task_store[task_id] = {"status": "queued", "message": "Task queued", "progress": 0}
-    background_tasks.add_task(
-        scrape_task,
-        task_id,
-        request.max_professors,
-        request.save_file,
-        request.max_workers,
-        request.use_cache
-    )
-    return {
-        "task_id": task_id,
-        "status": "queued",
-        "message": f"Scraping task started with {request.max_workers} workers, cache {'enabled' if request.use_cache else 'disabled'}"
-    }
