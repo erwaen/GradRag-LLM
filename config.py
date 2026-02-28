@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: str = ""
     COLLECTION_NAME: str = "advisors"
     COHERE_API_KEY: str = ""
+    EMBEDDING_MODEL: str = "text-embedding-3-large"
+    EMBEDDING_DIMENSIONS: int = 256
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8",

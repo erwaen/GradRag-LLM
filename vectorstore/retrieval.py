@@ -78,8 +78,9 @@ Now generate the recommendations:
 
 def get_embedding(question: str) -> List[float]:
     response = OPENAI_CLIENT.embeddings.create(
-        input=question,
-        model="text-embedding-3-small"
+        input=question.replace("\n", " "),
+        model=settings.EMBEDDING_MODEL,
+        dimensions=settings.EMBEDDING_DIMENSIONS,
     )
     return response.data[0].embedding
 

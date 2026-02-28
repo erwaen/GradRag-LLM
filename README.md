@@ -9,12 +9,17 @@ RAG API that recommends PhD advisors based on CS Rankings data.
 docker compose up qdrant
 ```
 
-**2. Scrape professor homepages**
+**2. Scrape professor homepages** → `logs/scraped_professors.json`
 ```bash
-docker compose run --rm gradrag-app python scripts/scrape.py --max-professors 100
+docker compose run --rm gradrag-app python scripts/scrape.py
 ```
 
-**3. Start the API**
+**3. Parse + embed + upload to Qdrant**
+```bash
+docker compose run --rm gradrag-app python scripts/build_embed_index.py
+```
+
+**4. Start the API**
 ```bash
 docker compose up --build
 ```

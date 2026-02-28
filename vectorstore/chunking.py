@@ -4,7 +4,10 @@ import json
 import logging
 import glob
 import re
+import tiktoken
 from crawler.data_model import DataModel
+
+_tokenizer = tiktoken.get_encoding("cl100k_base")
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +34,19 @@ def get_advisor_documents() -> List[Document]:
                 print("skipping advisor", advisor.name)
                 continue
 
-            if advisor.raw_content.get("raw_text"):
+            if advisor.raw_content.get("content"):
+                clean_text = re.sub(r'[^\w\s,.!?]', '', advisor.raw_content["content"])
+                if len(_tokenizer.encode(clean_text)) > 8192:
+                    print(f"skipping {advisor.name}: exceeds 8192 token limit")
+                    continue
+
                 # Filter papers with count > 0
                 active_areas = {
                     papers["name"]: papers["count"]
-                    for area, papers in advisor.papers.model_dump().items() 
+                    for area, papers in advisor.papers.model_dump().items()
                     if papers["count"] > 0
-                } 
+                }
                 total_papers = sum(count for count in active_areas.values())
-                clean_text = re.sub(r'[^\w\s,.!?]', '', advisor.raw_content["raw_text"])
  
                 # Create document with enhanced metadata
                 doc = Document(
