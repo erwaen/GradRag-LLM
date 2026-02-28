@@ -1,10 +1,9 @@
 from config import get_settings
 from fastapi import FastAPI
-# from crawler.crawler import router as crawler_router
 from vectorstore.router import router as vectorstore_router
-# from crawler.professor_router import router as professor_router
+from crawler.professor_router import router as professor_router
 from fastapi.middleware.cors import CORSMiddleware
-app = FastAPI() 
+app = FastAPI()
 
 settings = get_settings()
 
@@ -18,6 +17,5 @@ app.add_middleware(
 )
 
 
-# app.include_router(crawler_router, prefix="/api", tags=["crawler"])
 app.include_router(vectorstore_router, prefix="/api", tags=["vectorstore"])
-# app.include_router(professor_router, prefix="/api", tags=["professor"])
+app.include_router(professor_router, prefix="/api", tags=["professor"])

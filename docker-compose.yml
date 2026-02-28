@@ -2,7 +2,7 @@ services:
   gradrag-app:
     build:
       context: .
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     container_name: gradrag-llm
     ports:
       - "8102:8000"

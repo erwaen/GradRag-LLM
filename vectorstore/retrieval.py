@@ -19,7 +19,7 @@ OPENAI_CLIENT = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 QDRANT_CLIENT = QdrantClient(
     url=settings.QDRANT_URL,
-    api_key=settings.QDRANT_API_KEY,
+    api_key=settings.QDRANT_API_KEY or None,
 )
 
 import json

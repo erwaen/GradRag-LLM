@@ -1,3 +1,42 @@
+# GradRag LLM
+
+A RAG-based API for retrieving advisor recommendations based on CS Rankings data.
+
+## Quick Start
+
+### 1. Start Qdrant
+
+```bash
+docker compose up qdrant
+```
+
+### 2. Scrape professor data
+
+```bash
+python scripts/scrape.py                    # scrape all professors
+python scripts/scrape.py --max-professors 50  # limit to first 50
+python scripts/scrape.py --workers 20         # use 20 parallel workers
+python scripts/scrape.py --help               # show all options
+```
+
+Results are saved to `logs/scraped_professors.json`.
+
+### 3. Start the API
+
+```bash
+uvicorn main:app --reload
+```
+
+### Active endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/professor/scrape` | Start background scraping task |
+| `GET` | `/api/professor/status` | Cache stats and task status |
+| `POST` | `/api/retrieve_advisors` | Query advisors via RAG |
+
+---
+
 # Qdrant + Docker Setup with Snapshot Restore (Linux)
 
 Instructions for running Qdrant using Docker and restoring a collection from a snapshot.
